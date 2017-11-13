@@ -1,5 +1,6 @@
 package com.syarul.rnlocation;
 
+import android.app.Dialog;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationListener;
@@ -8,6 +9,9 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.os.Bundle;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
@@ -15,8 +19,15 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.bridge.Promise;
 
 public class RNLocationModule extends ReactContextBaseJavaModule{
+
+    // const
+    private static final String EVENT_LOCATION = "locationUpdated";
+    private static final String EVENT_DISABLE = "locationDisable";
+    private static final String EVENT_ENABLE = "locationEnable";
+    private static final String EVENT_STATUSCHANGE = "locationStatus";
 
     // React Class Name as called from JS
     public static final String REACT_CLASS = "RNLocation";
@@ -38,7 +49,46 @@ public class RNLocationModule extends ReactContextBaseJavaModule{
         mReactContext = reactContext;
 
         locationManager = (LocationManager) mReactContext.getSystemService(Context.LOCATION_SERVICE);
-        mLastLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+        }
+
+        public void sendLocation(Location loc) {
+            mLastLocation = loc;
+            if (mLastLocation != null) {
+                try {
+                    double longitude;
+                    double latitude;
+                    double speed;
+                    double altitude;
+                    double accuracy;
+                    double course;
+
+                    // Receive Longitude / Latitude from (updated) Last Location
+                    longitude = mLastLocation.getLongitude();
+                    latitude = mLastLocation.getLatitude();
+                    speed = mLastLocation.getSpeed();
+                    altitude = mLastLocation.getAltitude();
+                    accuracy = mLastLocation.getAccuracy();
+                    course = mLastLocation.getBearing();
+
+                    Log.i(TAG, "Got new location. Lng: " +longitude+" Lat: "+latitude);
+
+                    // Create Map with Parameters to send to JS
+                    WritableMap params = Arguments.createMap();
+                    params.putDouble("longitude", longitude);
+                    params.putDouble("latitude", latitude);
+                    params.putDouble("speed", speed);
+                    params.putDouble("altitude", altitude);
+                    params.putDouble("accuracy", accuracy);
+                    params.putDouble("course", course);
+
+                    // Send Event to JS to update Location
+                    sendEvent(mReactContext, EVENT_LOCATION, params);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.i(TAG, "Location services disconnected.");
+                }
+            }
         }
 
 
@@ -58,62 +108,50 @@ public class RNLocationModule extends ReactContextBaseJavaModule{
          */
         @ReactMethod
         public void startUpdatingLocation() {
+            mLastLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            sendLocation(mLastLocation);
           mLocationListener = new LocationListener(){
             @Override
             public void onStatusChanged(String str,int in,Bundle bd){
+                WritableMap out = Arguments.createMap();
+                out.putInt("status", in);
+                sendEvent(mReactContext, EVENT_STATUSCHANGE, out);
             }
 
             @Override
             public void onProviderEnabled(String str){
+                sendEvent(mReactContext, EVENT_ENABLE, null);
             }
 
             @Override
             public void onProviderDisabled(String str){
+                sendEvent(mReactContext, EVENT_DISABLE, null);
             }
 
             @Override
             public void onLocationChanged(Location loc){
-                mLastLocation = loc;
-                if (mLastLocation != null) {
-                  try {
-                    double longitude;
-                    double latitude;
-                    double speed;
-                    double altitude;
-                    double accuracy;
-                    double course;
+                sendLocation(loc);
+            }
+          };
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 0, mLocationListener);
+        }
 
-                    // Receive Longitude / Latitude from (updated) Last Location
-                    longitude = mLastLocation.getLongitude();
-                    latitude = mLastLocation.getLatitude();
-                    speed = mLastLocation.getSpeed();
-                    altitude = mLastLocation.getAltitude();
-                    accuracy = mLastLocation.getAccuracy();
-                    course = mLastLocation.getBearing();
+        @ReactMethod
+        public void checkGooglePlayServices(Promise promise) {
+            final int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mReactContext);
+            if (status != ConnectionResult.SUCCESS) {
+                Log.e(TAG, GooglePlayServicesUtil.getErrorString(status));
 
-                    Log.i(TAG, "Got new location. Lng: " +longitude+" Lat: "+latitude);
-
-                   // Create Map with Parameters to send to JS
-                    WritableMap params = Arguments.createMap();
-                    params.putDouble("longitude", longitude);
-                    params.putDouble("latitude", latitude);
-                    params.putDouble("speed", speed);
-                    params.putDouble("altitude", altitude);
-                    params.putDouble("accuracy", accuracy);
-                    params.putDouble("course", course);
-
-                    // Send Event to JS to update Location
-                    sendEvent(mReactContext, "locationUpdated", params);
-                  } catch (Exception e) {
-                    e.printStackTrace();
-                    Log.i(TAG, "Location services disconnected.");
-                  }
-              }
-
-
-        }};
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 1, mLocationListener);
-
+                // ask user to update google play services.
+                Dialog dialog = GooglePlayServicesUtil.getErrorDialog(status, getCurrentActivity(), 1);
+                dialog.show();
+                promise.reject(new Throwable("Older version of play services"));
+            } else {
+                Log.i(TAG, GooglePlayServicesUtil.getErrorString(status));
+                // google play services is updated.
+                //your code goes here...
+                promise.resolve(true);
+            }
         }
 
         @ReactMethod
