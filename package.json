@@ -1,19 +1,48 @@
 {
-  "name": "react-native-gps",
-  "version": "0.1.2",
+  "_from": "git+https://github.com/Chathu94/react-native-gps.git",
+  "_id": "react-native-gps@0.1.2",
+  "_inBundle": false,
+  "_integrity": "sha1-sQH2y29cvKnnbCruuHUZHM9jKZU=",
+  "_location": "/react-native-gps",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "git",
+    "raw": "react-native-gps@git+https://github.com/Chathu94/react-native-gps.git",
+    "name": "react-native-gps",
+    "escapedName": "react-native-gps",
+    "rawSpec": "git+https://github.com/Chathu94/react-native-gps.git",
+    "saveSpec": "git+https://github.com/Chathu94/react-native-gps.git",
+    "fetchSpec": "https://github.com/Chathu94/react-native-gps.git",
+    "gitCommittish": "master"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "git+https://github.com/Chathu94/react-native-gps.git#b9c7b89356882aae832767a0667c994e4124f930",
+  "_spec": "react-native-gps@git+https://github.com/Chathu94/react-native-gps.git",
+  "_where": "/Users/chathuranga/Projects/bcon/Client",
+  "bugs": {
+    "url": "https://github.com/agrass/react-native-gps/issues"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "Forked from agrass/react-native-gps",
   "devDependencies": {
     "react-native": "^0.14"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/agrass/react-native-gps.git"
-  },
-  "license": "MIT",
+  "homepage": "https://github.com/agrass/react-native-gps#readme",
   "keywords": [
     "react-native",
     "react-component",
     "ios",
     "location"
   ],
-  "main": "RNLocation.js"
+  "license": "MIT",
+  "main": "RNLocation.js",
+  "name": "react-native-gps",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agrass/react-native-gps.git"
+  },
+  "version": "0.1.2"
 }

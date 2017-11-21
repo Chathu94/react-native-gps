@@ -29,10 +29,12 @@ RCT_EXPORT_MODULE()
 
         self.locationManager.distanceFilter = kCLDistanceFilterNone;
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+        self.locationManager.allowsBackgroundLocationUpdates = true;
 
         self.locationManager.pausesLocationUpdatesAutomatically = NO;
     }
-
+    NSLog(@"react-native-location: requestAlwaysAuthorization");
+    [self.locationManager requestAlwaysAuthorization];
     return self;
 }
 
@@ -81,6 +83,11 @@ RCT_EXPORT_METHOD(startUpdatingLocation)
     [self.locationManager startUpdatingLocation];
 }
 
+RCT_EXPORT_METHOD(checkGooglePlayServices)
+{
+    NSLog(@"react-native-location: checkng Google Play Services in a IOS Device (^_^) ");
+}
+
 RCT_EXPORT_METHOD(startUpdatingHeading)
 {
     [self.locationManager startUpdatingHeading];
@@ -126,10 +133,19 @@ RCT_EXPORT_METHOD(stopUpdatingHeading)
     }
 }
 
--(void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
+- (void)locationManagerDidPauseLocationUpdates:(CLLocationManager *)manager
 {
-    NSString *statusName = [self nameForAuthorizationStatus:status];
-    [self.bridge.eventDispatcher sendDeviceEventWithName:@"authorizationStatusDidChange" body:statusName];
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"locationDisable" body:@{}];
+}
+
+- (void)locationManagerDidResumeLocationUpdates:(CLLocationManager *)manager
+{
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"locationEnable" body:@{}];
+}
+
+- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
+{
+    [self.bridge.eventDispatcher sendDeviceEventWithName:@"locationStatus" body:@{@"status": [self nameForAuthorizationStatus:status]}];
 }
 
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
