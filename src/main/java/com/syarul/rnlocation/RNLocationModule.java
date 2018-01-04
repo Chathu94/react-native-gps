@@ -37,6 +37,7 @@ public class RNLocationModule extends ReactContextBaseJavaModule{
     private Location mLastLocation;
     private LocationListener mLocationListener;
     private LocationManager locationManager;
+    private Integer appType;
 
     //The React Native Context
     ReactApplicationContext mReactContext;
@@ -83,7 +84,11 @@ public class RNLocationModule extends ReactContextBaseJavaModule{
                     params.putDouble("course", course);
 
                     // Send Event to JS to update Location
-                    sendEvent(mReactContext, EVENT_LOCATION, params);
+                    if (accuracy < 50 && appType == 1) {
+                        sendEvent(mReactContext, EVENT_LOCATION, params);
+                    } else if (appType == 2) {
+                        sendEvent(mReactContext, EVENT_LOCATION, params);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     Log.i(TAG, "Location services disconnected.");
@@ -107,7 +112,8 @@ public class RNLocationModule extends ReactContextBaseJavaModule{
          * Location Callback as called by JS
          */
         @ReactMethod
-        public void startUpdatingLocation() {
+        public void startUpdatingLocation(Integer appType) {
+            this.appType = appType;
             mLastLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             sendLocation(mLastLocation);
           mLocationListener = new LocationListener(){

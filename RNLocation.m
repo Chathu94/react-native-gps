@@ -9,6 +9,7 @@
 @interface RNLocation() <CLLocationManagerDelegate>
 
 @property (strong, nonatomic) CLLocationManager *locationManager;
+@property NSInteger appType;
 
 @end
 
@@ -78,8 +79,9 @@ RCT_EXPORT_METHOD(startMonitoringSignificantLocationChanges)
     [self.locationManager startMonitoringSignificantLocationChanges];
 }
 
-RCT_EXPORT_METHOD(startUpdatingLocation)
+RCT_EXPORT_METHOD(startUpdatingLocation: (NSInteger) type)
 {
+    self.appType = type;
     [self.locationManager startUpdatingLocation];
 }
 
@@ -181,7 +183,9 @@ RCT_EXPORT_METHOD(stopUpdatingHeading)
         @"timestamp": @([location.timestamp timeIntervalSince1970] * 1000) // in ms
     };
 
-    NSLog(@"%@: lat: %f, long: %f, altitude: %f", location.timestamp, location.coordinate.latitude, location.coordinate.longitude, location.altitude);
-    [self.bridge.eventDispatcher sendDeviceEventWithName:@"locationUpdated" body:locationEvent];
+    if (self.appType != 1 || location.horizontalAccuracy < 50) {
+        NSLog(@"%@: lat: %f, long: %f, altitude: %f", location.timestamp, location.coordinate.latitude, location.coordinate.longitude, location.altitude);
+        [self.bridge.eventDispatcher sendDeviceEventWithName:@"locationUpdated" body:locationEvent];
+    }
 }
 @end
