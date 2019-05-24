@@ -1,6 +1,7 @@
 package com.syarul.rnlocation;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
@@ -124,6 +125,24 @@ public class RNLocationModule extends ReactContextBaseJavaModule{
     public String getName() {
       return REACT_CLASS;
     }
+
+    @ReactMethod
+    public void bringToFront() {
+        String packageName = this.mReactContext.getPackageName();
+        Intent launchIntent = this.mReactContext.getPackageManager().getLaunchIntentForPackage(packageName);
+        String className = launchIntent.getComponent().getClassName();
+
+        try {
+            Class<?> activityClass = Class.forName(className);
+            Intent activityIntent = new Intent(this.mReactContext, activityClass);
+            activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            activityIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            this.mReactContext.startActivity(activityIntent);
+        } catch(Exception e) {
+            Log.e(TAG, "Class not found", e);
+            return;
+        }
+    }
     /*
      * Location permission request (Not implemented yet)
      */
@@ -131,6 +150,17 @@ public class RNLocationModule extends ReactContextBaseJavaModule{
     public void requestWhenInUseAuthorization(){
       Log.i(TAG, "Requesting authorization");
     }
+
+    /*
+     * Location Once Callback as called by JS
+     */
+    @ReactMethod
+    public void getLocation(Integer appType) {
+        this.appType = appType;
+        mLastLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        sendLocation(mLastLocation);
+    }
+
     /*
      * Location Callback as called by JS
      */
