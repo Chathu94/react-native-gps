@@ -18,9 +18,9 @@
   "_requiredBy": [
     "/"
   ],
-  "_resolved": "git+https://github.com/Chathu94/react-native-gps.git#a3e75ccaf4cf0c53a2b2a1abeeef3da9eae03ee5",
+  "_resolved": "git+https://github.com/Chathu94/react-native-gps.git#be8cf3a0f63891c14e1340df0822eb68ef958da3",
   "_spec": "react-native-gps@git+https://github.com/Chathu94/react-native-gps.git",
-  "_where": "/Users/chathuranga/Projects/bcon/Client",
+  "_where": "/Users/slhacker/Projects/taxi_mobile_client",
   "bugs": {
     "url": "https://github.com/agrass/react-native-gps/issues"
   },
